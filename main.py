@@ -1,5 +1,76 @@
 import random
 import time
+#HELPER METHODS
+
+#O(n^2) time complexity
+def add(A, B):
+    n = len(A)
+    C = [[0 for _ in range(n)] for _ in range(n)] #fill w/ 0s
+    for i in range(n):
+        for j in range(n):
+            C[i][j] = A[i][j] + B[i][j]
+    return C
+
+#O(n^2) time complexity
+def subtract(A, B):
+    n = len(A)
+    C = [[0 for _ in range(n)] for _ in range(n)] #fill w/ 0s
+    for i in range(n):
+        for j in range(n):
+            C[i][j] = A[i][j] - B[i][j]
+    return C
+
+#Strassen needs matrices to be of size 2^k x 2^k
+def pad_matrix(matrix):
+    rows = len(matrix)
+    cols = len(matrix[0])
+    
+    # Find the next power of two for the larger dimension
+    size = 1
+    while size < max(rows, cols):
+        size *= 2
+    
+    new_matrix = [[0 for _ in range(size)] for _ in range(size)]
+    #copy og matrix into padded
+    for i in range(rows):
+        for j in range(cols):
+            new_matrix[i][j] = matrix[i][j]
+            
+    return new_matrix
+
+# Removes the padding from a matrix to return it to its original size
+def unpad_matrix(matrix, original_rows, original_cols):
+    return [row[:original_cols] for row in matrix[:original_rows]]
+
+def combine_quadrants(C11, C12, C21, C22):
+    # assuming submatrices are the same size
+    mid = len(C11)
+    n = 2 * mid
+    
+    C = [[0 for _ in range(n)] for _ in range(n)]
+    
+    # C11
+    for i in range(mid):
+        for j in range(mid):
+            C[i][j] = C11[i][j]
+            
+    # C12
+    for i in range(mid):
+        for j in range(mid):
+            C[i][j + mid] = C12[i][j]
+            
+    # C21
+    for i in range(mid):
+        for j in range(mid):
+            C[i + mid][j] = C21[i][j]
+            
+    # C22
+    for i in range(mid):
+        for j in range(mid):
+            C[i + mid][j + mid] = C22[i][j]
+            
+    return C
+
 
 def classical(a1, a2):
     #check if matrix dimensions are valid; might keep in if manual entry is implemented lateron
@@ -25,15 +96,57 @@ def naive(a1, a2):
     n = len(a1)
     return [[0 for _ in range(n)] for _ in range(n)]
 
-#delete inner contents if implementing
 def strassen(a1, a2):
     n = len(a1)
-    return [[0 for _ in range(n)] for _ in range(n)]
+
+    # Base case: if matrix is 1x1, perform simple multiplication
+    if n == 1:
+        return [[a1[0][0] * a2[0][0]]]
+
+    # Divide matrices into four sub-matrices
+    
+    '''
+    [row[:mid] for row in a1[:mid]]
+          ^columns            ^rows
+    '''
+    
+    mid = n // 2
+    A11 = [row[:mid]  for row in a1[:mid]]
+    A12 = [row[mid:]  for row in a1[:mid]]
+    A21 = [row[:mid]  for row in a1[mid:]]
+    A22 = [row[mid:]  for row in a1[mid:]]
+
+    B11 = [row[:mid]  for row in a2[:mid]]
+    B12 = [row[mid:]  for row in a2[:mid]]
+    B21 = [row[:mid]  for row in a2[mid:]]
+    B22 = [row[mid:]  for row in a2[mid:]]
+
+    # Calculate the seven products recursively
+    P1 = strassen(add(A11, A22), add(B11, B22))
+    P2 = strassen(add(A21, A22), B11)
+    P3 = strassen(A11, subtract(B12, B22))
+    P4 = strassen(A22, subtract(B21, B11))
+    P5 = strassen(add(A11, A12), B22)
+    P6 = strassen(subtract(A21, A11), add(B11, B12))
+    P7 = strassen(subtract(A12, A22), add(B21, B22))
+
+    # Combine the products to form the result sub-matrices
+    C11 = add(subtract(add(P1, P4), P5), P7)
+    C12 = add(P3, P5)
+    C21 = add(P2, P4)
+    C22 = add(add(subtract(P1, P2), P3), P6)
+
+    # Combine the result sub-matrices into the final matrix
+    C = combine_quadrants(C11, C12, C21, C22)
+
+    return C
 
 #prints random 2D array
 def rand2DArray():
     #we can change this later on for extra cred for n that isn't powers of 2
-    n = 2**random.randint(1,5) #10 lwk took 3 minutes to run just once
+    
+    #Colin Note: padding allows for non 2^k sizes
+    n = 2**random.randint(1,10) #10 lwk took 3 minutes to run just once
     a = [[random.randint(-9,9) for x in range(n)] for x in range(n)]
     return a
 
@@ -54,9 +167,9 @@ def testing(a1, a2):
     print("\nNaive Runtime: ", end-start, "Seconds\n")
 
     start = time.perf_counter()
-    res = strassen(a1,a2)
+    res = strassen(pad_matrix(a1),pad_matrix(a2))
     print("\nStrassen's Matrix Multiplication Result:")
-    print(res)
+    print(unpad_matrix(res, len(a1), len(a2)))
     end = time.perf_counter()
     print("\nStrassen Runtime: ", end-start, "seconds\n")
 
@@ -95,9 +208,9 @@ def main():
     print("\nNaive Divide-and-Conquer Matrix Multiplication Result:")
     print(res)
 
-    res = strassen(a1, a2)
+    res = strassen(pad_matrix(a1),pad_matrix(a2))
     print("\nStrassen's Matrix Multiplication Result:")
-    print(res)
+    print(unpad_matrix(res, len(a1), len(a2)))
 
 if __name__ == "__main__":
     main()
