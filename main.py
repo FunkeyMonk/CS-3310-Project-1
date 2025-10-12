@@ -92,9 +92,38 @@ def classical(a1, a2):
 
 #I put placeholders in this; delete the contents if implementing
 def naive(a1, a2):
-    #returns a zero matrix of same size
     n = len(a1)
-    return [[0 for _ in range(n)] for _ in range(n)]
+
+    # Base case: if matrix is 1x1, perform simple multiplication
+    if n == 1:
+        return [[a1[0][0] * a2[0][0]]]
+    
+
+    # Split matrices into quadrants
+    mid = n // 2
+    #A11 is top left quadrant in matrix A, A12 is top right in matrix A, etc...
+    A11 = [row[:mid]  for row in a1[:mid]]
+    A12 = [row[mid:]  for row in a1[:mid]]
+    A21 = [row[:mid]  for row in a1[mid:]]
+    A22 = [row[mid:]  for row in a1[mid:]]
+
+    B11 = [row[:mid]  for row in a2[:mid]]
+    B12 = [row[mid:]  for row in a2[:mid]]
+    B21 = [row[:mid]  for row in a2[mid:]]
+    B22 = [row[mid:]  for row in a2[mid:]]
+
+
+    # 8 recursive multiplications, do naive within the addition to make code clean and concise
+    C11 = add(naive(A11, B11), naive(A12, B21))
+    C12 = add(naive(A11, B12), naive(A12, B22))
+    C21 = add(naive(A21, B11), naive(A22, B21))
+    C22 = add(naive(A21, B12), naive(A22, B22))
+
+    # Recombine qudrants into matrix
+    C = combine_quadrants(C11, C12, C21, C22)
+    return C
+
+
 
 def strassen(a1, a2):
     n = len(a1)
@@ -151,6 +180,7 @@ def rand2DArray():
     return a
 
 def testing(a1, a2):
+    
     start = time.perf_counter()
     res = classical(a1,a2)
     print("Classical Matrix Multipication Result:")
@@ -158,6 +188,7 @@ def testing(a1, a2):
         print(row)
     end = time.perf_counter()
     print("\nClassical Runtime: ", end-start, "seconds\n")
+
 
     start = time.perf_counter()
     res = naive(a1,a2)
