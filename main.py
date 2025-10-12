@@ -175,33 +175,32 @@ def rand2DArray():
     #we can change this later on for extra cred for n that isn't powers of 2
     
     #Colin Note: padding allows for non 2^k sizes
-    n = 2**random.randint(1,10) #10 lwk took 3 minutes to run just once
+    n = random.randint(2,3)**random.randint(1,5) #10 lwk took 3 minutes to run just once
     a = [[random.randint(-9,9) for x in range(n)] for x in range(n)]
     return a
 
 def testing(a1, a2):
     
     start = time.perf_counter()
-    res = classical(a1,a2)
-    print("Classical Matrix Multipication Result:")
-    for row in res:
-        print(row)
+    res = classical(pad_matrix(a1),pad_matrix(a2))
     end = time.perf_counter()
+    print("Classical Matrix Multipication Result:")
+    print(unpad_matrix(res, len(a1), len(a2)))
     print("\nClassical Runtime: ", end-start, "seconds\n")
 
 
     start = time.perf_counter()
-    res = naive(a1,a2)
-    print("\nNaive Divide-and-Conquer Matrix Multiplication Result:")
-    print(res)
+    res = naive(pad_matrix(a1),pad_matrix(a2))
     end = time.perf_counter()
+    print("\nNaive Divide-and-Conquer Matrix Multiplication Result:")
+    print(unpad_matrix(res, len(a1), len(a2)))
     print("\nNaive Runtime: ", end-start, "Seconds\n")
 
     start = time.perf_counter()
     res = strassen(pad_matrix(a1),pad_matrix(a2))
+    end = time.perf_counter()
     print("\nStrassen's Matrix Multiplication Result:")
     print(unpad_matrix(res, len(a1), len(a2)))
-    end = time.perf_counter()
     print("\nStrassen Runtime: ", end-start, "seconds\n")
 
 def main():
