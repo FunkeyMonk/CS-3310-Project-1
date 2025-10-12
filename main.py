@@ -181,8 +181,11 @@ def rand2DArray():
 
 def testing(a1, a2):
     
+    a1 = pad_matrix(a1)
+    a2 = pad_matrix(a2)
+
     start = time.perf_counter()
-    res = classical(pad_matrix(a1),pad_matrix(a2))
+    res = classical(a1,a2)
     end = time.perf_counter()
     print("Classical Matrix Multipication Result:")
     print(unpad_matrix(res, len(a1), len(a2)))
@@ -190,14 +193,14 @@ def testing(a1, a2):
 
 
     start = time.perf_counter()
-    res = naive(pad_matrix(a1),pad_matrix(a2))
+    res = naive(a1,a2)
     end = time.perf_counter()
     print("\nNaive Divide-and-Conquer Matrix Multiplication Result:")
     print(unpad_matrix(res, len(a1), len(a2)))
     print("\nNaive Runtime: ", end-start, "Seconds\n")
 
     start = time.perf_counter()
-    res = strassen(pad_matrix(a1),pad_matrix(a2))
+    res = strassen(a1,a2)
     end = time.perf_counter()
     print("\nStrassen's Matrix Multiplication Result:")
     print(unpad_matrix(res, len(a1), len(a2)))
